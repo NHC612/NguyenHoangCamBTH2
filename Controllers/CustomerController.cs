@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LeAnhTuanBTH2.Models;
+using NguyenHoangCamBTH2.Models;
 using NguyenHoangCamBTH2.Data;
 
 namespace NguyenHoangCamBTH2.Controllers

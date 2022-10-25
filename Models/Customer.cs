@@ -1,4 +1,4 @@
-namespace LeAnhTuanBTH2.Models
+namespace NguyenHoangCamBTH2.Models
 {
     public class Customer
     {
