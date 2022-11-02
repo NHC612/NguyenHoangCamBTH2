@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NguyenHoangCamBTH2.Data;
+using NguyenHoangCamBTH2.Models.Process;
 using NguyenHoangCamBTH2.Models;
+using System.Diagnostics;
+
 
 namespace NguyenHoangCamBTH2.Controllers
 {
@@ -22,12 +25,16 @@ namespace NguyenHoangCamBTH2.Controllers
         // GET: Employee
         public async Task<IActionResult> Index()
         {
-              return _context.Employee != null ? 
-                          View(await _context.Employee.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Employee'  is null.");
+              return View(await _context.Employee.ToListAsync()) ;
+                    
+                         
         }
 
         // GET: Employee/Details/5
+        private bool EmployeeExists(string id )
+        {
+            return _context.Employee.Any(e => e.EmpID == id);
+        }
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Employee == null)
@@ -159,5 +166,38 @@ namespace NguyenHoangCamBTH2.Controllers
         {
           return (_context.Employee?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+        public async Task<IActionResult> Upload()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Upload(IFormFile file)
+        {
+            if (file!=null)
+            {
+                string fileExtension = Path.GetExtension(file.FileName);
+                if (fileExtension !=".xls" && fileExtension !=".xlsx")
+                {
+                    ModelState.AddModelError("", "Please choose excel file to upload!");
+
+                }
+                else
+                {
+                    //rename file when uoload to sever
+                    var fileName = DateTime.Now.ToShortDateString() + "/Uploads/Excels", fileName);
+                    var fileName = Path.Combine(Directory.GetCurrentDirectory() + "/Uploads/Excels", fileName);
+                    var fileLocation = new FileInfo(filePath).ToString();
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        //save file tp sever
+                        await file.CopyToAsync(stream);
+                    }
+                }
+            }
+            return View();
+        }
     }
 }
+
+

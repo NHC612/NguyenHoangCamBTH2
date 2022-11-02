@@ -1,6 +1,6 @@
 using NguyenHoangCamBTH2.Models;
 using Microsoft.EntityFrameworkCore;
-using LeAnhTuanBTH2.Models;
+using NguyenHoangCamBTH2.Models;
 
 namespace NguyenHoangCamBTH2.Data
 {
@@ -11,9 +11,10 @@ namespace NguyenHoangCamBTH2.Data
 
         }
         public DbSet<Student> Students {get; set;}
-        public DbSet<LeAnhTuanBTH2.Models.Customer>? Customer { get; set; }
+        public DbSet<NguyenHoangCamBTH2.Models.Customer>? Customer { get; set; }
         public DbSet<NguyenHoangCamBTH2.Models.Person>? Person { get; set; }
         public DbSet<NguyenHoangCamBTH2.Models.Employee>? Employee { get; set; }
+        
         
     }
 }
