@@ -16,6 +16,7 @@ namespace NguyenHoangCamBTH2.Controllers
     public class EmployeeController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private ExcelProcess _excelProcess = new ExcelProcess();
 
         public EmployeeController(ApplicationDbContext context)
         {
@@ -192,6 +193,23 @@ namespace NguyenHoangCamBTH2.Controllers
                     {
                         //save file tp sever
                         await file.CopyToAsync(stream);
+                        //read data from file and write to database
+                        var dt = _excelProcess.ExcelToDataTable(fileLocation);
+                        //using for loop to read data from dt
+                        for (int i = 0; i <dt.Rows.Count; i++)
+                        {
+                            //create a new Employee object
+                            var emp = new Employee();
+                            //set values for attributes
+                            emp.EmpID = dt.Rows[i][0].ToString();
+                            emp.EmpName = dt.Rows[i][1].ToString();
+                            emp.Address = dt.Rows[i][2].ToString();
+                            //add object to Context
+                            _context.Employee.Add(emp);
+                        }
+                        //save to database
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
                     }
                 }
             }
