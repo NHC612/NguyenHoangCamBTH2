@@ -1,3 +1,4 @@
+using System.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,12 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NguyenHoangCamBTH2.Data;
-using NguyenHoangCamBTH2.Models.Process;
 using NguyenHoangCamBTH2.Models;
-using System.Diagnostics;
+using NguyenHoangCamBTH2.Models.Process;
 
-
-namespace NguyenHoangCamBTH2.Controllers
+namespace LeAnhTuanBTH2.Controllers
 {
     public class EmployeeController : Controller
     {
@@ -26,17 +25,13 @@ namespace NguyenHoangCamBTH2.Controllers
         // GET: Employee
         public async Task<IActionResult> Index()
         {
-              return View(await _context.Employee.ToListAsync()) ;
-                    
-                         
+              return _context.Employee != null ? 
+                          View(await _context.Employee.ToListAsync()) :
+                          Problem("Entity set 'ApplicationDbContext.Employee'  is null.");
         }
 
         // GET: Employee/Details/5
-        private bool EmployeeExists(string id )
-        {
-            return _context.Employee.Any(e => e.EmpID == id);
-        }
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(String id)
         {
             if (id == null || _context.Employee == null)
             {
@@ -44,7 +39,7 @@ namespace NguyenHoangCamBTH2.Controllers
             }
 
             var employee = await _context.Employee
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.EmpID == id);
             if (employee == null)
             {
                 return NotFound();
@@ -64,7 +59,7 @@ namespace NguyenHoangCamBTH2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FullName,Age,Sđt")] Employee employee)
+        public async Task<IActionResult> Create([Bind("EmpID,EmpName,Address")] Employee employee)
         {
             if (ModelState.IsValid)
             {
@@ -76,7 +71,7 @@ namespace NguyenHoangCamBTH2.Controllers
         }
 
         // GET: Employee/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(String id) 
         {
             if (id == null || _context.Employee == null)
             {
@@ -96,9 +91,9 @@ namespace NguyenHoangCamBTH2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Age,Sđt")] Employee employee)
+        public async Task<IActionResult> Edit(string EmpID, [Bind("EmpID,EmpName,Address")] Employee employee)
         {
-            if (id != employee.Id)
+            if (EmpID != employee.EmpID)
             {
                 return NotFound();
             }
@@ -112,7 +107,7 @@ namespace NguyenHoangCamBTH2.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EmployeeExists(employee.Id))
+                    if (!EmployeeExists(employee.EmpID))
                     {
                         return NotFound();
                     }
@@ -127,7 +122,7 @@ namespace NguyenHoangCamBTH2.Controllers
         }
 
         // GET: Employee/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(String id)
         {
             if (id == null || _context.Employee == null)
             {
@@ -135,7 +130,7 @@ namespace NguyenHoangCamBTH2.Controllers
             }
 
             var employee = await _context.Employee
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.EmpID == id);
             if (employee == null)
             {
                 return NotFound();
@@ -163,40 +158,40 @@ namespace NguyenHoangCamBTH2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool EmployeeExists(int id)
+        private bool EmployeeExists(String id)
         {
-          return (_context.Employee?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.Employee?.Any(e => e.EmpID == id)).GetValueOrDefault();
         }
-        public async Task<IActionResult> Upload()
+
+        public async Task<IActionResult>Upload()
         {
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> Upload(IFormFile file)
         {
             if (file!=null)
             {
                 string fileExtension = Path.GetExtension(file.FileName);
-                if (fileExtension !=".xls" && fileExtension !=".xlsx")
+                if (fileExtension != ".xls" && fileExtension != ".xlsx")
                 {
                     ModelState.AddModelError("", "Please choose excel file to upload!");
-
                 }
                 else
                 {
-                    //rename file when uoload to sever
-                    var fileName = DateTime.Now.ToShortDateString() + "/Uploads/Excels", fileName);
-                    var fileName = Path.Combine(Directory.GetCurrentDirectory() + "/Uploads/Excels", fileName);
+                    var fileName = DateTime.Now.ToShortTimeString() + fileExtension;
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory() + "/Uploads/Excels", fileName);
                     var fileLocation = new FileInfo(filePath).ToString();
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        //save file tp sever
+                        //save file to server
                         await file.CopyToAsync(stream);
                         //read data from file and write to database
                         var dt = _excelProcess.ExcelToDataTable(fileLocation);
-                        //using for loop to read data from dt
-                        for (int i = 0; i <dt.Rows.Count; i++)
+                        //using for loop to read data from dt 
+                        for (int i = 0; i < dt.Rows.Count; i++)
                         {
                             //create a new Employee object
                             var emp = new Employee();
@@ -210,12 +205,11 @@ namespace NguyenHoangCamBTH2.Controllers
                         //save to database
                         await _context.SaveChangesAsync();
                         return RedirectToAction(nameof(Index));
+                        }
                     }
                 }
+                return View();
             }
-            return View();
+            
         }
     }
-}
-
-
